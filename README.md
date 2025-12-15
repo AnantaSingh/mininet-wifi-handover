@@ -1,6 +1,6 @@
-# WiFi Handover: SSF vs LLF
+# WiFi Handover: SSF vs LLF vs MCDM
 
-Comparative analysis of Strongest Signal First (SSF) and Least-Loaded First (LLF) handover algorithms using Mininet-WiFi.
+ Analysis of Strongest Signal First (SSF), Least-Loaded First (LLF), and Multi-Criteria Decision Making (MCDM) handover algorithms using Mininet-WiFi.
 
 ## Quick Start
 ```bash
@@ -13,29 +13,52 @@ sudo util/install.sh -Wlnfv
 git clone https://github.com/AnantaSingh/mininet-wifi-handover
 cd wifi-handover-project
 sudo mn -c
-sudo python3 comparison_fixed.py
+
+# Run individual algorithms
+sudo python3 scripts/ssf2.py
+sudo python3 scripts/llf_handover_dynamic.py
+sudo python3 scripts/mcdm_ssf_compare.py
 ```
 
-**Output:** `ssf_metrics.csv`, `llf_metrics.csv`, `ssf_vs_llf_comparison.png`
+## Main Scripts
 
-## Files
-
-- `comparison_fixed.py` - Main script, runs both algorithms
-- `ssf_handover_fixed.py` - SSF with GUI
-- `llf_handover_fixed.py` - LLF with GUI
-- `handover_fixed.py` - Basic demo
+- **`scripts/ssf2.py`** - Strongest Signal First (SSF) algorithm implementation with RSSI-based handover and hysteresis
+- **`scripts/llf_handover_dynamic.py`** - Least-Loaded First (LLF) algorithm with dynamic load balancing
+- **`scripts/mcdm_ssf_compare.py`** - Multi-Criteria Decision Making (MCDM) vs SSF comparison with enhanced scenarios
 
 ## Algorithms
 
-**SSF:** Selects strongest signal (5dB hysteresis). Higher throughput (45-50 Mbps), 1-2 handovers at 60-70m.
+**SSF (Strongest Signal First):** Selects AP with strongest RSSI signal with hysteresis margin to prevent ping-ponging. Higher throughput, optimized for signal quality.
 
-**LLF:** Selects least-loaded AP. Better load balance (38-42 Mbps), 1 handover at 50-60m.
+**LLF (Least-Loaded First):** Selects AP with least number of connected stations. Better load balancing across APs, optimized for network capacity.
+
+**MCDM (Multi-Criteria Decision Making):** Uses multiple criteria with weighted scoring to make handover decisions. More sophisticated decision-making process.
 
 ## Network Setup
 
-- 2 APs at (20,40) and (100,40), 60m range
-- Station moves 10m → 120m in 5m steps
-- Log-distance propagation (exponent=3)
+### SSF (`ssf2.py`)
+- **2 APs**: AP1 at (20,40), AP2 at (100,40), 60m range each
+- **Station**: Starts at (10,20), moves x=10 → 120m in 5m steps
+- **Station range**: 50m
+- **Hysteresis**: 5dB margin to prevent ping-ponging
+
+### LLF (`llf_handover_dynamic.py`)
+- **2 APs**: AP1 at (20,40), AP2 at (100,40), 60m range each
+- **Stations**: 
+  - sta1 (mobile): Starts at (10,20), moves x=10 → 120m in 5m steps
+  - sta2 & sta3 (static): Initially connected to AP1 to create load imbalance
+- **Station range**: 50m
+- **Load tracking**: Dynamically updates AP load after each handover
+
+### MCDM (`mcdm_ssf_compare.py`)
+- **4 APs**: 
+  - AP1: (30,50), range=50m, load=1.0x (low congestion)
+  - AP2: (100,50), range=50m, load=2.5x (high congestion)
+  - AP3: (60,70), range=50m, load=1.5x (medium congestion)
+  - AP4: (90,10), range=50m, load=1.0x (low congestion)
+- **Station**: Starts at (15,25), follows complex path through all APs
+- **Station range**: 50m
+- **Comparison**: SSF vs MCDM decision-making at each position
 
 ## Troubleshooting
 ```bash
